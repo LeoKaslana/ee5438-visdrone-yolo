@@ -18,10 +18,11 @@ def main() -> None:
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--fraction", type=float, default=1.0)
     parser.add_argument("--workers", type=int, default=4)
+    parser.add_argument("--name", type=str, default=None, help="Unique output directory name under runs/baseline")
     args = parser.parse_args()
     if not DATA_YAML.exists():
         raise SystemExit("VisDrone is not prepared. Run: python src/prepare_visdrone.py")
-    run_name = f"yolo11n_{args.imgsz}_seed{args.seed}"
+    run_name = args.name or f"yolo11n_{args.imgsz}_seed{args.seed}"
     if args.fraction < 1.0:
         run_name = f"pilot_{run_name}_fraction{args.fraction:g}"
 

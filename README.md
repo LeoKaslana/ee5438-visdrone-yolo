@@ -1,6 +1,6 @@
 # EE5438 VisDrone small object detection experiment
 
-This project starts with a YOLO11n baseline on VisDrone2019-DET. Planned experiments compare the original P3/P4/P5 prediction hierarchy with a P2/P3/P4 variant and a localized CBAM variant; those improvements are not implemented yet. The official Ultralytics source is cloned under `external/ultralytics`. Keep project-specific model YAML files and modules under `configs/` and `src/`.
+This project compares a YOLO11n baseline on VisDrone2019-DET with a P2/P3/P4 prediction variant. CBAM remains a possible later ablation, not part of the P2 experiment. The official Ultralytics source is cloned under `external/ultralytics`. Project-specific model YAML files and scripts live under `configs/` and `src/`.
 
 ## Get started on a teammate's computer
 
@@ -51,7 +51,21 @@ Start with a short pilot and inspect GPU memory and time per epoch:
 & .\.venv\Scripts\python.exe .\src\train_baseline.py --epochs 10 --batch 4
 ```
 
-For a full baseline, use `--epochs 100`. Record the exact command, Git commit, package versions, seed, and hardware with each run.
+For a matched baseline, use `--epochs 50 --batch 16 --workers 2 --seed 0`; keep these settings aligned with the P2 run where hardware permits. Record the exact command, Git commit, package versions, seed, and hardware with each run.
+
+The completed formal baseline used 50 epochs, 640-pixel input, batch 16, two workers, and seed 0. Its run is `runs/baseline/formal_yolo11n_640_b16_seed0_live/` (checkpoints and images are intentionally not tracked in Git).
+
+## P2/P3/P4 variant
+
+`configs/yolo11n-p2p3p4.yaml` keeps the YOLO11n backbone but replaces the P5/32 detection output with P2/4, yielding detection strides 4/8/16. It has about 1.94 million parameters and 9.9 GFLOPs, versus about 2.59 million parameters and 6.5 GFLOPs for the 10-class baseline. The P2 feature map increases activation memory despite the lower parameter count. `src/train_p2.py` initializes matching layers from the same `yolo11n.pt` COCO checkpoint used by the baseline; newly shaped layers train from scratch.
+
+On the first Windows machine, `scripts/train_p2_visible.ps1` runs a one-epoch 1%-data smoke test, then starts the 50-epoch full-data run in the same visible PowerShell window if the smoke test passes. The formal run is configured at 640 pixels, batch 16, two workers, and seed 0. A smoke run only checks the pipeline and memory; its accuracy is not meaningful. GPU memory approached the 8 GB hardware limit in the smoke test, so inspect the full run for CUDA out-of-memory errors.
+
+```powershell
+& .\scripts\train_p2_visible.ps1
+```
+
+The exact architecture and detection strides can be checked with `python -m unittest discover -s tests -v`. Once the full run finishes, evaluate its `best.pt` using the same `src/evaluate_small.py` settings as the baseline. Do not compare the 1%-data smoke score against the formal baseline.
 
 ## Small-object evaluation
 

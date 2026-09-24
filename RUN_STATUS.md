@@ -37,3 +37,11 @@ Benchmark stable batch size and DataLoader worker settings, then freeze the conf
 ```
 
 Do not use the 10-epoch pilot as the final comparison against P2 or CBAM.
+
+## Formal 50-epoch baseline and P2 experiment
+
+The 50-epoch YOLO11n baseline completed on 2026-09-24 with 640-pixel input, batch 16, two DataLoader workers, seed 0, and full VisDrone training data. Its output is `runs/baseline/formal_yolo11n_640_b16_seed0_live/`. The best built-in validation mAP50-95 was **0.16734** at epoch 48 (mAP50 **0.30056**). Independent COCO-style evaluation of `best.pt` using the same `src/evaluate_small.py` script gave AP-small **0.07086**, AP-medium **0.24662**, AP-large **0.41577**, overall AP **0.15479**, and AP50 **0.26895** on 548 val images. Full results are local in `runs/evaluation/formal_yolo11n_640_b16_seed0_live_val/summary.json` and are ignored by Git.
+
+The `configs/yolo11n-p2p3p4.yaml` variant replaces the P5 detection output with P2 while keeping the YOLO11n backbone. Its Detect strides are 4/8/16, with approximately 1.94 M parameters and 9.9 GFLOPs. A one-epoch 1%-data smoke training run at batch 16 finished successfully. That smoke run is only a pipeline test; its accuracy is not comparable to the formal baseline. Peak GPU allocation approached the 8 GB GPU limit.
+
+The full 50-epoch P2 run started on 2026-09-24 with the same input size, batch, workers, and seed as the formal baseline. Its run directory is `runs/p2/formal_yolo11n_p2p3p4_640_b16_seed0/`. Check completion and CUDA memory stability before drawing any comparison. The visible PowerShell launcher is `scripts/train_p2_visible.ps1`.
