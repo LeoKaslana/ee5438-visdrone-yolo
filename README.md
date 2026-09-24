@@ -67,6 +67,8 @@ On the first Windows machine, `scripts/train_p2_visible.ps1` runs a one-epoch 1%
 
 The exact architecture and detection strides can be checked with `python -m unittest discover -s tests -v`. Once the full run finishes, evaluate its `best.pt` using the same `src/evaluate_small.py` settings as the baseline. Do not compare the 1%-data smoke score against the formal baseline.
 
+If the full run is interrupted, `scripts/resume_p2_visible.ps1` resumes from that run's `last.pt` in a visible PowerShell window, restoring the checkpoint's original training settings. The checkpoint is not uploaded to GitHub; each machine resumes its own local run.
+
 ## Small-object evaluation
 
 Ultralytics' ordinary validation output does not report the project's primary metric, COCO AP-small. After training, run:
