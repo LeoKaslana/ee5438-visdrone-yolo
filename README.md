@@ -15,6 +15,7 @@ python -m venv .venv
 git clone https://github.com/ultralytics/ultralytics.git external/ultralytics
 git -C external/ultralytics checkout --detach 25cda524aa10298b3ba8b9b287677b49fd236b7d
 & .\.venv\Scripts\python.exe -m pip install -e .\external\ultralytics
+& .\.venv\Scripts\python.exe -m pip install pycocotools==2.0.11
 ```
 
 The official Ultralytics source is fixed to commit `25cda524aa10298b3ba8b9b287677b49fd236b7d` (2026-09-23), which reports package version 8.4.161. The project code, model configuration, and documentation are tracked here. Datasets, downloaded source dependencies, Python environments, checkpoints, and runs are ignored because they are large or machine specific.
@@ -51,6 +52,20 @@ Start with a short pilot and inspect GPU memory and time per epoch:
 ```
 
 For a full baseline, use `--epochs 100`. Record the exact command, Git commit, package versions, seed, and hardware with each run.
+
+## Small-object evaluation
+
+Ultralytics' ordinary validation output does not report the project's primary metric, COCO AP-small. After training, run:
+
+```powershell
+& .\.venv\Scripts\python.exe .\src\evaluate_small.py --weights .\runs\baseline\yolo11n_640_seed0\weights\best.pt --split val
+```
+
+The script converts the existing YOLO labels to COCO ground truth in **original image pixels**, runs predictions on the validation split, and writes `summary.json`, `ground_truth_coco.json`, and `predictions_coco.json` under `runs/evaluation/`. It reports AP-small (area below 32 x 32 pixels), AP-medium, AP-large, overall AP, AP50, AP75, and per-class AP. It allows up to 902 detections per image because VisDrone is dense. These are metrics against the Ultralytics-converted labels, not an official VisDrone challenge score. Keep test-dev unused until the model and settings are selected.
+
+Replace the weights path if Ultralytics gave your run a suffix such as `-2`. The first setup machine's completed 10-epoch pilot is under `yolo11n_640_seed0-4`.
+
+To recompute COCO metrics from the saved predictions without rerunning inference, add `--reuse-predictions`. The COCO-style AP numbers can differ from Ultralytics' built-in mAP because the matching and aggregation implementations differ; compare all variants with this same script.
 
 For a short VisDrone pipeline test, use:
 

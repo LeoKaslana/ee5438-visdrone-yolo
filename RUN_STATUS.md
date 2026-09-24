@@ -20,15 +20,20 @@ Checked on 2026-09-24, Asia/Shanghai.
 5. YOLO11n completed a VisDrone pilot at 640-pixel input, batch 2, one epoch, and `fraction=0.01` (65 training images) with full 548-image validation. Output: `runs/baseline/yolo11n_640_seed0/`.
 6. The pilot wrote `best.pt` and `results.csv`. The training log reported about 0.633 GB peak GPU memory and 20.99 seconds for the run's epoch time. These values are not a full-dataset runtime estimate.
 
-The pilot's mAP is not meaningful for model comparison because it uses only 1% of the training images and one epoch. A full baseline has not yet been trained.
+The 1%-data pilot's mAP is not meaningful for model comparison because it uses only one epoch. A formal long baseline has not yet been trained.
+
+## Full-data 10-epoch pilot
+
+The full-data 10-epoch YOLO11n pilot completed on 2026-09-24 at 640-pixel input, batch 4, and seed 0. Output: `runs/baseline/yolo11n_640_seed0-4/`. Training was interrupted after epoch 8 by a Windows DataLoader worker failure, then resumed from `last.pt` with `workers=0`. The final validation output on 548 images and 38,759 boxes was mAP50 **0.2353**, mAP50-95 **0.1291**, precision **0.3464**, and recall **0.2660**. Both training and validation losses were still decreasing at epoch 10. This is a pipeline pilot, not a final fully trained baseline.
+
+The independent COCO-style size evaluation of `best.pt` is in `runs/evaluation/yolo11n_640_seed0-4_val/summary.json`. It reconstructs box areas in original image pixels from the converted labels and uses up to 902 detections per image. Of 38,759 validation boxes, 26,586 (68.6%) are small under the COCO <32 x 32 pixel definition. AP-small is **0.0454**, AP-medium **0.1852**, and AP-large **0.3692**. Its overall COCO AP is **0.1138** and AP50 **0.2015**; these need not equal the built-in Ultralytics mAP because the metric implementations differ. The figures strongly motivate testing a small-object-specific modification, but they do not prove P2 will help.
 
 ## Next experiment
 
-Run the 10-epoch full-data pilot first:
+Benchmark stable batch size and DataLoader worker settings, then freeze the configuration and train a formal longer baseline. The `workers=0` resume was stable but much slower than the first eight epochs with workers. AP-small and speed must be measured with the same protocol for every ablation. The initial 10-epoch pilot command was:
 
 ```powershell
 & .\.venv\Scripts\python.exe .\src\train_baseline.py --epochs 10 --batch 4
 ```
 
-Inspect memory, per-epoch time, and loss curves. Then choose final training epochs and batch size before starting the full baseline and model ablations.
-
+Do not use the 10-epoch pilot as the final comparison against P2 or CBAM.
