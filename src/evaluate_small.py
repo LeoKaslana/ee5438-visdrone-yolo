@@ -147,6 +147,22 @@ def overall_metrics(evaluation: COCOeval) -> dict[str, float | None]:
     }
 
 
+def detection_coco(coco_gt: COCO, predictions: list[dict]) -> COCO:
+    """Construct a COCO detections object, including the valid no-detection case."""
+    if predictions:
+        return coco_gt.loadRes(predictions)
+    coco_dt = COCO()
+    coco_dt.dataset = {
+        "info": coco_gt.dataset.get("info", {}),
+        "licenses": coco_gt.dataset.get("licenses", []),
+        "images": coco_gt.dataset["images"],
+        "categories": coco_gt.dataset["categories"],
+        "annotations": [],
+    }
+    coco_dt.createIndex()
+    return coco_dt
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--weights", type=Path, required=True)
@@ -247,13 +263,10 @@ def main() -> None:
         if len(seen) != len(image_ids):
             raise RuntimeError(f"Predicted {len(seen)} of {len(image_ids)} images")
         prediction_path.write_text(json.dumps(predictions), encoding="utf-8")
-    if not predictions:
-        raise RuntimeError("Model produced no detections; COCO.loadRes requires a nonempty list")
-
     coco_gt = COCO()
     coco_gt.dataset = ground_truth
     coco_gt.createIndex()
-    coco_dt = coco_gt.loadRes(predictions)
+    coco_dt = detection_coco(coco_gt, predictions)
     evaluation = COCOeval(coco_gt, coco_dt, "bbox")
     evaluation.params.imgIds = sorted(image_ids.values())
     evaluation.params.catIds = list(range(1, len(names) + 1))

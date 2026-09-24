@@ -20,6 +20,7 @@ def main() -> None:
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--fraction", type=float, default=1.0)
     parser.add_argument("--workers", type=int, default=2)
+    parser.add_argument("--save-period", type=int, default=-1, help="Save a checkpoint every N epochs; -1 disables it")
     parser.add_argument("--name", type=str, default="formal_yolo11n_p2p3p4_640_b16_seed0")
     args = parser.parse_args()
 
@@ -36,6 +37,7 @@ def main() -> None:
         seed=args.seed,
         device=0,
         workers=args.workers,
+        save_period=args.save_period,
         amp=True,
         cache=False,
         fraction=args.fraction,

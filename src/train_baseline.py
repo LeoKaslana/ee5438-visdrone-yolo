@@ -18,12 +18,13 @@ def main() -> None:
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--fraction", type=float, default=1.0)
     parser.add_argument("--workers", type=int, default=4)
+    parser.add_argument("--save-period", type=int, default=-1, help="Save a checkpoint every N epochs; -1 disables it")
     parser.add_argument("--name", type=str, default=None, help="Unique output directory name under runs/baseline")
     args = parser.parse_args()
     if not DATA_YAML.exists():
         raise SystemExit("VisDrone is not prepared. Run: python src/prepare_visdrone.py")
     run_name = args.name or f"yolo11n_{args.imgsz}_seed{args.seed}"
-    if args.fraction < 1.0:
+    if args.fraction < 1.0 and args.name is None:
         run_name = f"pilot_{run_name}_fraction{args.fraction:g}"
 
     model = YOLO("yolo11n.pt")
@@ -35,6 +36,7 @@ def main() -> None:
         seed=args.seed,
         device=0,
         workers=args.workers,
+        save_period=args.save_period,
         amp=True,
         cache=False,
         fraction=args.fraction,
