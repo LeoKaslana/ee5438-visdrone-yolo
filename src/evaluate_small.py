@@ -175,7 +175,10 @@ def main() -> None:
     parser.add_argument("--max-det", type=int, default=902)
     parser.add_argument("--output-dir", type=Path)
     parser.add_argument("--reuse-predictions", action="store_true", help="Reuse the saved prediction JSON")
+    parser.add_argument("--summary-only", action="store_true", help="Save only summary.json, not large COCO ground-truth/prediction JSON files")
     args = parser.parse_args()
+    if args.summary_only and args.reuse_predictions:
+        parser.error("--summary-only cannot be combined with --reuse-predictions")
     if args.max_det < 10:
         parser.error("--max-det must be at least 10 for COCO evaluation")
     if not args.weights.is_file():
@@ -188,7 +191,8 @@ def main() -> None:
     ground_truth, image_ids, sizes, clipped_count = build_ground_truth(args.split, names)
     output_dir = args.output_dir or ROOT / "runs" / "evaluation" / f"{args.weights.parent.parent.name}_{args.split}"
     output_dir.mkdir(parents=True, exist_ok=True)
-    (output_dir / "ground_truth_coco.json").write_text(json.dumps(ground_truth), encoding="utf-8")
+    if not args.summary_only:
+        (output_dir / "ground_truth_coco.json").write_text(json.dumps(ground_truth), encoding="utf-8")
 
     prediction_path = output_dir / "predictions_coco.json"
     summary_path = output_dir / "summary.json"
@@ -262,7 +266,8 @@ def main() -> None:
         elapsed = time.perf_counter() - started
         if len(seen) != len(image_ids):
             raise RuntimeError(f"Predicted {len(seen)} of {len(image_ids)} images")
-        prediction_path.write_text(json.dumps(predictions), encoding="utf-8")
+        if not args.summary_only:
+            prediction_path.write_text(json.dumps(predictions), encoding="utf-8")
     coco_gt = COCO()
     coco_gt.dataset = ground_truth
     coco_gt.createIndex()

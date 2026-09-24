@@ -24,7 +24,7 @@ The first setup machine used Windows, Python 3.11.16, PyTorch 2.11.0+cu128, and 
 
 ## Recorded experiments and strict comparison
 
-Use `src/run_recorded_experiment.py` for new training runs. It refuses an existing run ID and writes a separate `runs/records/<comparison-id>-<variant>/manifest.json` and `train.log` before/during training. The manifest records the exact command, Git revision and dirty state, software/GPU versions, input hashes, training settings, exit status, per-epoch metrics, checkpoint hashes, and AP-small evaluation result. Ultralytics saves `args.yaml`, `results.csv`, plots, `best.pt`, `last.pt`, and a periodic checkpoint every 10 epochs in the corresponding `runs/baseline/` or `runs/p2/` directory. Evaluation JSON and `evaluation.log` are saved separately. A failed run keeps its log and a failure status; it does not silently turn into a successful run.
+Use `src/run_experiment.py` for new training runs. It refuses an existing run ID and writes one concise `runs/records/<comparison-id>-<variant>.json` containing the start/end time, duration, fixed settings, code revision, best training metrics, AP-small result, and status. Training output goes directly to the visible terminal, preserving Ultralytics' normal single-line progress bar; no verbose terminal transcript is saved. Ultralytics still saves `args.yaml`, `results.csv`, plots, `best.pt`, `last.pt`, and a periodic checkpoint every 10 epochs in the corresponding `runs/baseline/` or `runs/p2/` directory. Independent evaluation saves only `summary.json`, not large prediction JSON files. A failed run keeps its concise result record and partial training artifacts.
 
 For the matched 50-epoch baseline/P2 comparison on the first machine, launch the visible PowerShell window with:
 
@@ -34,7 +34,7 @@ For the matched 50-epoch baseline/P2 comparison on the first machine, launch the
 
 The script runs baseline first, then P2, sequentially on one GPU. Both use full VisDrone train/val, 640 pixels, physical batch 8, `workers=0`, seed 0, AMP, the same COCO `yolo11n.pt` initialization, and the same AP-small evaluator. Each gets a unique comparison ID and will not overwrite earlier runs. Keep the terminal open and prevent Windows from sleeping. If baseline fails, P2 is not started. A batch change or manual resume must be documented as a new experimental condition; do not present mixed-batch results as a strict comparison. Earlier experiments are summarized in `EXPERIMENTS.md`.
 
-`runs/` remains ignored by Git because logs, data-derived JSON, and checkpoints can be large. Copy or back up `runs/records/`, `runs/evaluation/`, and the corresponding training directories if results must survive a disk failure or be shared with teammates; GitHub carries only the code and textual summaries.
+`runs/` remains ignored by Git because checkpoints and figures can be large. Copy or back up `runs/records/`, `runs/evaluation/`, and the corresponding training directories if results must survive a disk failure or be shared with teammates; GitHub carries only the code and textual summaries.
 
 ## First checks
 

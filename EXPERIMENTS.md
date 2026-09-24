@@ -12,4 +12,4 @@ The COCO-style AP-small values use `src/evaluate_small.py` on the 548-image VisD
 
 ## New recorded runs
 
-For new work, use `scripts/train_strict_pair_visible.ps1` or `src/run_recorded_experiment.py`. Each run receives a unique ID and has a machine-readable manifest, terminal log, Ultralytics artifacts, and an AP-small summary. Add the final strict pair and its comparison here once both runs complete.
+For new work, use `scripts/train_strict_pair_visible.ps1` or `src/run_experiment.py`. Each run receives a unique ID, one concise result JSON under `runs/records/`, normal Ultralytics artifacts, and an AP-small summary. The terminal keeps its native progress bar; verbose console output is not saved. Add the final strict pair and its comparison here once both runs complete.
