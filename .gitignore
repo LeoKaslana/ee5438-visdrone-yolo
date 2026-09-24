@@ -1,0 +1,12 @@
+.python/
+.uv-cache/
+.venv/
+tools/
+external/
+data/
+runs/
+weights/
+*.pt
+*.cache
+__pycache__/
+
