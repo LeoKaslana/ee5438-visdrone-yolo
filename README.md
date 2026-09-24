@@ -69,6 +69,8 @@ The exact architecture and detection strides can be checked with `python -m unit
 
 If the full run is interrupted, `scripts/resume_p2_visible.ps1` resumes from that run's `last.pt` in a visible PowerShell window, restoring the checkpoint's original training settings. The checkpoint is not uploaded to GitHub; each machine resumes its own local run.
 
+On the first machine, the same Windows DataLoader worker failure recurred during epoch 11 after a same-settings resume. `scripts/resume_p2_safe_visible.ps1` therefore resumes from the completed epoch 10 checkpoint with batch 8 and `workers=0`; all other checkpoint settings remain unchanged. The existing run directory still contains `b16` in its name because it began with batch 16. **This run mixes batch sizes and should be treated as a recovery/exploratory run, not a strictly matched architecture ablation.** For a final controlled comparison, train baseline and P2 from the same COCO checkpoint with one fixed, memory-safe batch configuration throughout, or explicitly report this limitation.
+
 ## Small-object evaluation
 
 Ultralytics' ordinary validation output does not report the project's primary metric, COCO AP-small. After training, run:
