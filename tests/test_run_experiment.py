@@ -10,7 +10,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
-from run_experiment import build_train_command, save_json, training_metrics
+from run_experiment import build_resume_command, build_train_command, save_json, training_metrics
 
 
 class RunExperimentTests(unittest.TestCase):
@@ -30,6 +30,19 @@ class RunExperimentTests(unittest.TestCase):
         args = argparse.Namespace(variant="p2", epochs=50, batch=8, workers=0, imgsz=640, seed=0, fraction=1.0, save_period=10)
         command = build_train_command(args, "strict-test-p2")
         self.assertEqual(command[command.index("--batch") + 1], "8")
+        self.assertEqual(command[command.index("--workers") + 1], "0")
+
+    def test_four_scale_command(self) -> None:
+        args = argparse.Namespace(variant="p2p3p4p5", epochs=50, batch=8, workers=0, imgsz=640, seed=0, fraction=1.0, save_period=10)
+        command = build_train_command(args, "strict-test-p2p3p4p5")
+        self.assertEqual(Path(command[1]).name, "train_p2p3p4p5.py")
+
+    def test_resume_command_uses_existing_checkpoint(self) -> None:
+        args = argparse.Namespace(workers=0)
+        checkpoint = Path("runs/baseline/existing/weights/last.pt")
+        command = build_resume_command(args, checkpoint)
+        self.assertEqual(Path(command[1]).name, "resume_training.py")
+        self.assertEqual(command[command.index("--checkpoint") + 1], str(checkpoint))
         self.assertEqual(command[command.index("--workers") + 1], "0")
 
     def test_result_json(self) -> None:

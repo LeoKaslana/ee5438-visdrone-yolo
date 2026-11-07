@@ -105,6 +105,42 @@ For a short VisDrone pipeline test, use:
 & .\.venv\Scripts\python.exe .\src\train_baseline.py --epochs 1 --batch 2 --fraction 0.01 --workers 0
 ```
 
+## Strict comparisons, recovery, and diagnostics
+
+The current controlled comparison uses 50 epochs, 640 px, batch 8, workers 0,
+full VisDrone training data, and seeds 0/1/2. Older mixed-batch recovery runs
+above are exploratory. Start a new run with a unique comparison ID:
+
+```powershell
+& .\.venv\Scripts\python.exe .\src\run_experiment.py --variant p2 --comparison-id my-seed2 --seed 2
+```
+
+Supported variants are `baseline`, `p2` (P2/P3/P4), and `p2p3p4p5` (four
+detection scales). The four-scale architecture is in
+`configs/yolo11n-p2p3p4p5.yaml`. All variants initialize compatible layers from
+the local `yolo11n.pt` COCO checkpoint.
+
+To resume, repeat the exact command and add `--resume`. The runner checks the
+saved parameters, restores `weights/last.pt`, and keeps one concise JSON record
+under `runs/records/`. It evaluates AP-small after training. An interruption
+before the first completed epoch has no checkpoint; retain that attempt and
+start with a fresh comparison ID. Completed runs are skipped on resume.
+
+`scripts/continue_strict_repeats_visible.ps1` continues the original machine's
+specific seed 1/2 run IDs in a visible PowerShell window, skipping completed
+runs. Teammates should use their own IDs with the generic runner instead.
+
+`src/audit_visdrone_labels.py` compares original annotations inside the local
+VisDrone ZIP archives against converted labels and reports class counts and
+degenerate boxes. `src/analyze_failures.py` compares the three saved prediction
+exports for a comparison ID, writes diagnostic confidence sweeps, and renders
+failure examples. First export each variant with `src/evaluate_small.py` into
+`runs/analysis/<comparison-id>-<variant>/` without `--summary-only`. Diagnostic
+IoU=0.5 recall at a chosen confidence threshold is separate from COCO AP.
+
+Datasets, checkpoints, predictions, and run records remain local and are ignored
+by Git. A clone provides the code and model definitions, not trained weights.
+
 ## Sources
 
 See `references/SOURCES.md` for the official code, dataset, and research references.
